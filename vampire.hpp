@@ -13,12 +13,16 @@ class Vampire : public Entity
         AnimateState m_animateState;
         Direction m_direction;
         int availableLasers = 1;
+        bool isJumping = false;
+        bool isFalling = false;
 
     public:
         ShootLaser* laser = nullptr;
         Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : m_animateState(firstAnimationState), m_direction(right), Entity(srcRect, moverRect, entityType) {}
         void moveLeft();
         void moveRight();
+        void jump();
         void updateAnimations();
         void shootLaser();
+        void physics();
 };

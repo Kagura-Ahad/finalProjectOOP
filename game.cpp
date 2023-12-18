@@ -149,19 +149,17 @@ void Game::run()
                 switch (e.key.keysym.sym)
                 {
                     case SDLK_a:
-						// Make sure the vampire is on the ground and that it doesn't already have a laser before changing direction or moving
-						if ((vampire.m_moverRect.y + vampire.m_moverRect.h == 460) && (vampire.laser == nullptr))
-							vampire.moveLeft();
+						vampire.moveLeft();
                         break;
                     case SDLK_d:
-						// Make sure the vampire is on the ground and that it doesn't already have a laser before changing direction or moving
-						if ((vampire.m_moverRect.y + vampire.m_moverRect.h == 460) && (vampire.laser == nullptr))
                         vampire.moveRight();
                         break;
 					case SDLK_l:
-						// Make sure the vampire is on the ground and that it doesn't already have a laser 
-						if ((vampire.m_moverRect.y + vampire.m_moverRect.h == 460) && (vampire.laser == nullptr))
-							vampire.shootLaser();
+						vampire.shootLaser();
+						break;
+					case SDLK_w:
+						vampire.jump();
+						break;
                     default:
                         break;
                 }
@@ -185,6 +183,9 @@ void Game::run()
         {
             scrollingOffset = 0;
         }
+
+		// Turn physics on for the vampire
+		vampire.physics();
 
 		// Draw the vampire and the fly
 		vampire.drawEntity();
