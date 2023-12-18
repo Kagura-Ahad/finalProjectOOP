@@ -66,13 +66,13 @@ void Vampire::shootLaser()
         if (m_direction == left)
         {
             
-            laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 20, 0, 0, left);
+            laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 17, 0, 0, left);
         }
         else 
         // Check the direction the vampire is facing and create a laser accordingly
         if (m_direction == right)
         {
-            laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 20, 0, 832, right);
+            laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 17, 0, 832, right);
         }
         // availableLasers -= 1;
     }

@@ -133,8 +133,8 @@ void Game::run()
     bool quit = false;
     SDL_Event e;
 
-	Vampire vampire({0, 0, 90, 150}, {50, 385, 45, 75}, PLAYER);
-	Entity* fly = new Fly({180, 0, 90, 90}, {105, 400, 60, 60}, NPC);
+	Vampire vampire({0, 0, 90, 150}, {50, 395, 39, 65}, PLAYER);
+	Entity* fly = new Fly({180, 0, 90, 90}, {99, 400, 60, 60}, NPC);
 
     while (!quit)
     {
