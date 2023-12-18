@@ -133,8 +133,8 @@ void Game::run()
     bool quit = false;
     SDL_Event e;
 
-	Vampire vampire({0, 0, 90, 150}, {50, 400, 36, 60}, PLAYER);
-	Entity* fly = new Fly({180, 0, 90, 90}, {96, 400, 60, 60}, NPC);
+	Vampire vampire({0, 0, 90, 150}, {50, 385, 45, 75}, PLAYER);
+	Entity* fly = new Fly({180, 0, 90, 90}, {105, 400, 60, 60}, NPC);
 
     while (!quit)
     {
@@ -149,13 +149,19 @@ void Game::run()
                 switch (e.key.keysym.sym)
                 {
                     case SDLK_a:
-                        vampire.moveLeft();
+						// Make sure the vampire is on the ground and that it doesn't already have a laser before changing direction or moving
+						if ((vampire.m_moverRect.y + vampire.m_moverRect.h == 460) && (vampire.laser == nullptr))
+							vampire.moveLeft();
                         break;
                     case SDLK_d:
+						// Make sure the vampire is on the ground and that it doesn't already have a laser before changing direction or moving
+						if ((vampire.m_moverRect.y + vampire.m_moverRect.h == 460) && (vampire.laser == nullptr))
                         vampire.moveRight();
                         break;
 					case SDLK_l:
-						vampire.shootLaser(SCREEN_WIDTH);
+						// Make sure the vampire is on the ground and that it doesn't already have a laser 
+						if ((vampire.m_moverRect.y + vampire.m_moverRect.h == 460) && (vampire.laser == nullptr))
+							vampire.shootLaser();
                     default:
                         break;
                 }

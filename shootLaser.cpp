@@ -18,18 +18,38 @@ void ShootLaser::drawLaserBeam()
         {234, 125, 124, 255}  // #EA7D7C
     };
 
-    for (int i = eyeX; i < laserTrajectoryX; ++i)
+    if (m_direction == left)
     {
-        for (int j = 0; j < 7; ++j)
+        for (int i = eyeX; i > laserTrajectoryX; i--)
         {
-            drawLaserPoint(i, eyeY + j, beamColors[j]);
+            for (int j = 0; j < 7; j++)
+            {
+                drawLaserPoint(i, eyeY + j, beamColors[j]);
+            }
+        }
+    }
+    else if (m_direction == right)
+    {
+        for (int i = eyeX; i < laserTrajectoryX; i++)
+        {
+            for (int j = 0; j < 7; j++)
+            {
+                drawLaserPoint(i, eyeY + j, beamColors[j]);
+            }
         }
     }
 }
 
 bool ShootLaser::reachedEnd() const
 {
-    return laserTrajectoryX > m_screenWidth;
+    if (m_direction == left)
+    {
+        return laserTrajectoryX <= m_screenBoundLeft;
+    }
+    else
+    {
+        return laserTrajectoryX >= m_screenBoundRight;
+    }
 }
 
 void ShootLaser::update()
@@ -37,6 +57,13 @@ void ShootLaser::update()
     if (!reachedEnd())
     {
         drawLaserBeam();
-        laserTrajectoryX += 7;
+
+        if (m_direction == left)
+        {
+            laserTrajectoryX -= 7;        }
+        else if (m_direction == right)
+        {
+            laserTrajectoryX += 7;
+        }
     }
 }

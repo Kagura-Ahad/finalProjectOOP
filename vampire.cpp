@@ -56,11 +56,24 @@ void Vampire::updateAnimations()
     }
 }
 
-void Vampire::shootLaser(int screenWidth)
+void Vampire::shootLaser()
 {
+    // Check if the vampire has any lasers left
+    // Then create a new laser with the screen bounds 0 and 832 (hardcoded)
     if (availableLasers > 0)
     {
-        laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 17, m_moverRect.y + 16, screenWidth);
+        // Check the direction the vampire is facing and create a laser accordingly
+        if (m_direction == left)
+        {
+            
+            laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 20, 0, 0, left);
+        }
+        else 
+        // Check the direction the vampire is facing and create a laser accordingly
+        if (m_direction == right)
+        {
+            laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 20, 0, 832, right);
+        }
         // availableLasers -= 1;
     }
 }

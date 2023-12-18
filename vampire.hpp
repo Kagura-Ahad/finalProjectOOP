@@ -1,15 +1,10 @@
-#include "entity.hpp"
 #include "shootLaser.hpp"
+#include "entity.hpp"
 
 enum AnimateState{
     firstAnimationState,
     secondAnimationState,
     thirdAnimationState
-};
-
-enum Direction{
-    left,
-    right
 };
 
 class Vampire : public Entity
@@ -21,9 +16,9 @@ class Vampire : public Entity
 
     public:
         ShootLaser* laser = nullptr;
-        Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : m_animateState(firstAnimationState), m_direction(left), Entity(srcRect, moverRect, entityType) {}
+        Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : m_animateState(firstAnimationState), m_direction(right), Entity(srcRect, moverRect, entityType) {}
         void moveLeft();
         void moveRight();
         void updateAnimations();
-        void shootLaser(int screenWidth);
+        void shootLaser();
 };
