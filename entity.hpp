@@ -1,10 +1,11 @@
 #pragma once
 #include "drawing.hpp"
+#include <iostream>
 
 enum EntityType
 {
     PLAYER,
-    NPC
+    RANDOMLY_APPEARING_ENTITY,
 };
 
 class Entity
@@ -17,5 +18,5 @@ class Entity
 
         Entity(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : m_srcRect(srcRect), m_moverRect(moverRect), m_entityType(entityType) {}
 
-        void drawEntity();
+        virtual void drawEntity();
 };

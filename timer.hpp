@@ -1,8 +1,11 @@
-#include "entity.hpp"
-class Timer : public Entity
+#pragma once
+#include "randomlyAppearingEntity.hpp"
+
+
+class Timer : public RandomlyAppearingEntity
 {
     private:
 
     public:
-        Timer(SDL_Rect srcRect, SDL_Rect moverRect) : Entity(srcRect, moverRect) {}
+        Timer(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : RandomlyAppearingEntity(srcRect, moverRect, entityType) {}
 };

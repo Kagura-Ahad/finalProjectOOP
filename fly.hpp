@@ -1,8 +1,11 @@
-#include "entity.hpp"
-class Fly : public Entity
+#pragma once
+#include "randomlyAppearingEntity.hpp"
+
+
+class Fly : public RandomlyAppearingEntity
 {
     private:
 
     public:
-        Fly(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : Entity(srcRect, moverRect, entityType) {}
+        Fly(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : RandomlyAppearingEntity(srcRect, moverRect, entityType) {}
 };

@@ -18,6 +18,7 @@ class Vampire : public Entity
 
     public:
         ShootLaser* laser = nullptr;
+        int* vampiresLasersPosition = nullptr;
         Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : m_animateState(firstAnimationState), m_direction(right), Entity(srcRect, moverRect, entityType) {}
         void moveLeft();
         void moveRight();
@@ -25,4 +26,6 @@ class Vampire : public Entity
         void updateAnimations();
         void shootLaser();
         void physics();
+        int* getVampiresLasersPosition();
+        void drawEntity() override;
 };

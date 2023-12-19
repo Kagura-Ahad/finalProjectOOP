@@ -1,10 +1,9 @@
 #include "game.hpp"
-#include "entity.hpp"
-#include "fly.hpp"
+#include "objectCreator.hpp"
 #include "vampire.hpp"
 
 SDL_Renderer* Drawing::gRenderer = NULL;
-SDL_Texture* Drawing::assetsNPC = NULL;
+SDL_Texture* Drawing::assetsRANDOMLY_APPEARING_ENTITY = NULL;
 SDL_Texture* Drawing::assetsPlayer = NULL;
 
 bool Game::init()
@@ -67,10 +66,10 @@ bool Game::loadMedia()
 {
 	//Loading success flag
 	bool success = true;
-	Drawing::assetsNPC = loadTexture("finalSprite.png");
+	Drawing::assetsRANDOMLY_APPEARING_ENTITY = loadTexture("finalSprite.png");
 	Drawing::assetsPlayer = loadTexture("finalVampire.png");
     gTexture = loadTexture("background.png");
-	if(Drawing::assetsNPC==NULL || gTexture==NULL || Drawing::assetsPlayer==NULL)
+	if(Drawing::assetsRANDOMLY_APPEARING_ENTITY == NULL || Drawing::assetsPlayer == NULL || gTexture == NULL)
 
     {
         printf("Unable to run due to error: %s\n",SDL_GetError());
@@ -84,8 +83,8 @@ void Game::close()
 	//Free loaded images
 	SDL_DestroyTexture(Drawing::assetsPlayer);
 	Drawing::assetsPlayer = NULL;
-	SDL_DestroyTexture(Drawing::assetsNPC);
-	Drawing::assetsNPC = NULL;
+	SDL_DestroyTexture(Drawing::assetsRANDOMLY_APPEARING_ENTITY);
+	Drawing::assetsRANDOMLY_APPEARING_ENTITY = NULL;
 	SDL_DestroyTexture(gTexture);
 	
 	//Destroy window
@@ -134,7 +133,7 @@ void Game::run()
     SDL_Event e;
 
 	Vampire vampire({0, 0, 90, 150}, {50, 395, 39, 65}, PLAYER);
-	Entity* fly = new Fly({180, 0, 90, 90}, {99, 400, 60, 60}, NPC);
+	ObjectCreator objectCreator;
 
     while (!quit)
     {
@@ -184,23 +183,9 @@ void Game::run()
             scrollingOffset = 0;
         }
 
-		// Turn physics on for the vampire
-		vampire.physics();
-
-		// Draw the vampire and the fly
+		// Draw the vampire and the randomly appearing entities
 		vampire.drawEntity();
-		fly->drawEntity();
-
-		// Update the vampire's laser
-		if (vampire.laser != nullptr)
-		{
-            vampire.laser->update();
-            if (vampire.laser->reachedEnd())
-			{
-                delete vampire.laser;
-                vampire.laser = nullptr;
-            }
-        }
+		objectCreator.createRandomlyAppearingEntities(vampire.getVampiresLasersPosition());
 
         SDL_RenderPresent(Drawing::gRenderer);
         SDL_Delay(10); // Adjust the delay to control the frame rate

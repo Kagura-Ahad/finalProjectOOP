@@ -3,5 +3,12 @@
 void Entity::drawEntity()
 {
     //Draw the texture
-    SDL_RenderCopy( Drawing::gRenderer, m_entityType == PLAYER ? Drawing::assetsPlayer : Drawing::assetsNPC, &m_srcRect, &m_moverRect);
+    if (m_entityType == PLAYER)
+    {
+        SDL_RenderCopy(Drawing::gRenderer, Drawing::assetsPlayer, &m_srcRect, &m_moverRect);
+    }
+    else if (m_entityType == RANDOMLY_APPEARING_ENTITY)
+    {
+        SDL_RenderCopy(Drawing::gRenderer, Drawing::assetsRANDOMLY_APPEARING_ENTITY, &m_srcRect, &m_moverRect);
+    }
 }

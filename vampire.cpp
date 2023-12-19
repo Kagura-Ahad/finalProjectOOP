@@ -1,5 +1,22 @@
 #include "vampire.hpp"
 
+void Vampire::drawEntity()
+{
+    Entity::drawEntity();
+    Vampire::physics();
+
+    // Update the vampire's laser
+		if (laser != nullptr)
+		{
+            laser->update();
+            if (laser->reachedEnd())
+			{
+                delete laser;
+                laser = nullptr;
+            }
+        }
+}
+
 void Vampire::moveLeft()
 {
     // Make sure the vampire is on the ground and that it doesn't already have a laser before changing direction or moving
@@ -63,11 +80,11 @@ void Vampire::physics()
 
         if (m_direction == left)
         {
-            m_moverRect.x -= 2;
+            m_moverRect.x -= 1;
         }
         else if (m_direction == right)
         {
-            m_moverRect.x += 2;
+            m_moverRect.x += 1;
         }
 
         // Check if the vampire has reached the top of the jump
@@ -86,11 +103,11 @@ void Vampire::physics()
 
         if (m_direction == left)
         {
-            m_moverRect.x -= 2;
+            m_moverRect.x -= 1;
         }
         else if (m_direction == right)
         {
-            m_moverRect.x += 2;
+            m_moverRect.x += 1;
         }
 
         // Check if the vampire has reached the ground
@@ -135,7 +152,6 @@ void Vampire::shootLaser()
         // Check the direction the vampire is facing and create a laser accordingly
         if (m_direction == left)
         {
-            
             laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 17, 0, 0, left);
         }
         else 
@@ -145,5 +161,21 @@ void Vampire::shootLaser()
             laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 17, 0, 832, right);
         }
         // availableLasers -= 1;
+    }
+}
+
+int* Vampire::getVampiresLasersPosition()
+{
+    // Check if the vampire has a laser
+    if (laser != nullptr)
+    {
+        // Return the laser's position
+        vampiresLasersPosition = new int{laser->laserTrajectoryX};
+        return  vampiresLasersPosition;
+    }
+    else
+    {
+        // Return nullptr if the vampire doesn't have a laser
+        return nullptr;
     }
 }
