@@ -3,8 +3,7 @@
 void Vampire::moveLeft()
 {
     // Make sure the vampire is on the ground and that it doesn't already have a laser before changing direction or moving
-    // Comment Updated: The vampire can move right even if it is not on the ground
-    if (/*(m_moverRect.y + m_moverRect.h == 460) && */(laser == nullptr) && (m_moverRect.x > 0))
+    if ((m_moverRect.y + m_moverRect.h == 460) && (laser == nullptr) && (m_moverRect.x > 0))
     {
         if (m_direction == right)
         m_direction = left;
@@ -25,8 +24,7 @@ void Vampire::moveLeft()
 void Vampire::moveRight()
 {
     // Make sure the vampire is on the ground and that it doesn't already have a laser before changing direction or moving
-    // Comment Updated: The vampire can move right even if it is not on the ground
-	if (/*(m_moverRect.y + m_moverRect.h == 460) && */(laser == nullptr) && (m_moverRect.x < 832))
+	if ((m_moverRect.y + m_moverRect.h == 460) && (laser == nullptr) && (m_moverRect.x < 832))
     {
         if (m_direction == left)
         m_direction = right;
@@ -61,7 +59,16 @@ void Vampire::physics()
     if (isJumping)
     {
         // Move the vampire up
-        m_moverRect.y -= 1;
+        m_moverRect.y -= 2;
+
+        if (m_direction == left)
+        {
+            m_moverRect.x -= 2;
+        }
+        else if (m_direction == right)
+        {
+            m_moverRect.x += 2;
+        }
 
         // Check if the vampire has reached the top of the jump
         if (m_moverRect.y <= 300)
@@ -75,7 +82,16 @@ void Vampire::physics()
     else if (isFalling)
     {
         // Move the vampire down
-        m_moverRect.y += 1;
+        m_moverRect.y += 2;
+
+        if (m_direction == left)
+        {
+            m_moverRect.x -= 2;
+        }
+        else if (m_direction == right)
+        {
+            m_moverRect.x += 2;
+        }
 
         // Check if the vampire has reached the ground
         if (m_moverRect.y + m_moverRect.h >= 460)
