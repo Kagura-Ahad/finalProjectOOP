@@ -7,5 +7,5 @@ class Onion : public RandomlyAppearingEntity
     private:
 
     public:
-        Onion(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : RandomlyAppearingEntity(srcRect, moverRect, entityType) {}
+        Onion(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType, int lengthOfOnionsNonTransparentPixelsList, int (*onionsNonTransparentPixels)[2]);
 };

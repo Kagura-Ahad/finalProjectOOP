@@ -132,7 +132,7 @@ void Game::run()
     bool quit = false;
     SDL_Event e;
 
-	Vampire vampire({0, 0, 90, 150}, {50, 395, 39, 65}, PLAYER);
+	Vampire vampire({0, 0, 39, 65}, {50, 395, 39, 65}, PLAYER);
 	ObjectCreator objectCreator;
 
     while (!quit)

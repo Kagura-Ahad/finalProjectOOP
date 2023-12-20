@@ -10,8 +10,8 @@ enum AnimateState{
 class Vampire : public Entity
 {
     private:
-        AnimateState m_animateState;
-        Direction m_direction;
+        AnimateState m_animateState = firstAnimationState;
+        Direction m_direction = right;
         int availableLasers = 1;
         bool isJumping = false;
         bool isFalling = false;
@@ -19,7 +19,7 @@ class Vampire : public Entity
     public:
         ShootLaser* laser = nullptr;
         int* vampiresLasersPosition = nullptr;
-        Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : m_animateState(firstAnimationState), m_direction(right), Entity(srcRect, moverRect, entityType) {}
+        Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType);
         void moveLeft();
         void moveRight();
         void jump();

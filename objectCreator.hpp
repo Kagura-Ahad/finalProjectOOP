@@ -21,4 +21,5 @@ class ObjectCreator
     public:       
         ObjectCreator(); 
         void createRandomlyAppearingEntities(int* vampiresLasersPosition);
+        int (*returnArrayOfArrays(int entity))[2];
 };

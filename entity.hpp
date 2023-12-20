@@ -14,9 +14,11 @@ class Entity
         EntityType m_entityType;
 
     public:
+        int m_lengthOfEntitysNonTransparentPixelsList;
+        int (*m_entitysNonTransparentPixels)[2];
         SDL_Rect m_srcRect, m_moverRect;
 
-        Entity(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : m_srcRect(srcRect), m_moverRect(moverRect), m_entityType(entityType) {}
-
+        Entity(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType, int lengthOfEntitysNonTransparentPixelsList, int (*entitysNonTransparentPixels)[2]);
+        Entity(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType);
         virtual void drawEntity();
 };
