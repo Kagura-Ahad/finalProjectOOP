@@ -10,7 +10,17 @@
 #include "timer.hpp"
 #include <vector>
 
-
+// enum RandomlyAppearingEntityType
+// {
+//     FLY,
+//     BAT,
+//     CAT,
+//     GARLIC,
+//     JAR_OF_BLOOD,
+//     KNIFE,
+//     LASER,
+//     ONION
+// };
 
 
 class ObjectCreator
@@ -22,4 +32,6 @@ class ObjectCreator
         ObjectCreator(); 
         void createRandomlyAppearingEntities(int* vampiresLasersPosition);
         int (*returnArrayOfArrays(int entity))[2];
+
+        std::vector<RandomlyAppearingEntity*>& getEntities();
 };

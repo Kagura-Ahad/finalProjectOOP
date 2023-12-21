@@ -7,5 +7,5 @@ class Garlic : public RandomlyAppearingEntity
     private:
 
     public:
-        Garlic(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType, int lengthOfGarlicsNonTransparentPixelsList, int (*garlicsNonTransparentPixels)[2]);
+        Garlic(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType, int lengthOfGarlicsNonTransparentPixelsList, int (*garlicsNonTransparentPixels)[2], RandomlyAppearingEntityType type);
 };

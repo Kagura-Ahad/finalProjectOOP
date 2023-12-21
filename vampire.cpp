@@ -1,22 +1,124 @@
 #include "vampire.hpp"
+#include <unordered_set>
+#include "randomlyAppearingEntity.hpp"
 
-Vampire::Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : Entity(srcRect, moverRect, entityType) {}
+// Function to convert coordinates to a unique integer for set comparison
+size_t makeHash(int x, int y) {
+    return static_cast<size_t>(x) * 31 + static_cast<size_t>(y); // Adjust multiplier as needed
+}
 
-void Vampire::drawEntity()
+Vampire::Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : Entity(srcRect, moverRect, entityType)
+{
+    if (m_direction == right)
+    {
+        if (m_animateState == firstAnimationState)
+        {
+            m_srcRect.x = 0;
+        }
+    }
+}
+
+void Vampire::drawEntity(ObjectCreator& creatorObject)
 {
     Entity::drawEntity();
     Vampire::physics();
 
     // Update the vampire's laser
-		if (laser != nullptr)
-		{
-            laser->update();
-            if (laser->reachedEnd())
-			{
-                delete laser;
-                laser = nullptr;
+    if (laser != nullptr)
+    {
+        laser->update();
+        if (laser->reachedEnd())
+        {
+            delete laser;
+            laser = nullptr;
+        }
+    }
+    
+    
+    
+    std::vector<RandomlyAppearingEntity*>& entities = creatorObject.getEntities();
+
+    //Check if Vampire collides 
+    for (auto it = entities.rbegin(); it != entities.rend(); ++it)
+    {
+
+        if (*it != nullptr)
+        {
+            if (m_moverRect.x < (*it)->m_moverRect.x + (*it)->m_moverRect.w &&
+                m_moverRect.x + m_moverRect.w > (*it)->m_moverRect.x &&
+                m_moverRect.y < (*it)->m_moverRect.y + (*it)->m_moverRect.h &&
+                m_moverRect.y + m_moverRect.h > (*it)->m_moverRect.y)
+            {
+                if ((*it)->m_type == CAT || (*it)->m_type == GARLIC || (*it)->m_type == ONION || (*it)->m_type == KNIFE)
+                {
+                    m_lives -= 1;
+                }
+                else if ((*it)->m_type == LASER)
+                {
+                    m_availableLaserAbility += 1;
+                }
+                else if ((*it)->m_type == FLY)
+                {
+                    m_availableFlyAbility += 1;
+                }
+                else if ((*it)->m_type == TIMER)
+                {
+                    m_availableTimerAbility += 1;
+                }
+                else if ((*it)->m_type == BAT)
+                {
+                    m_batsCollected += 1;
+                }
+                else if ((*it)->m_type == JAR_OF_BLOOD)
+                {
+                    m_lives += 1;
+                }
+                delete *it;
+                *it = nullptr;
+                entities.erase(std::next(it).base());
             }
         }
+    }
+    
+    // //Failed attempt at collision detection when non transparent pixels coincide
+    // int offsetX[] = {-1, 0, 1, -1}; // Adjust as needed
+    // int offsetY[] = {-1, -1, 0, 0}; // Adjust as needed
+
+    // for (auto it = entities.begin(); it != entities.end();) {
+    //     std::unordered_set<size_t> entityPixels;
+
+    //     // Populate an unordered_set with hash values generated from entity's pixels
+    //     for (int i = 0; i < (*it)->m_lengthOfEntitysNonTransparentPixelsList; ++i) {
+    //         int x = (*it)->m_entitysNonTransparentPixels[i][0];
+    //         int y = (*it)->m_entitysNonTransparentPixels[i][1];
+    //         entityPixels.insert(makeHash(x, y));
+    //     }
+
+    //     bool collisionDetected = false;
+
+    //     // Check for collisions between vampire and entities
+    //     for (int i = 0; i < this->m_lengthOfEntitysNonTransparentPixelsList; ++i) {
+    //         for (int k = 0; k < 9; ++k) {
+    //             int x = this->m_entitysNonTransparentPixels[i][0] + offsetX[k];
+    //             int y = this->m_entitysNonTransparentPixels[i][1] + offsetY[k];
+
+    //             if (entityPixels.find(makeHash(x, y)) != entityPixels.end()) {
+    //                 std::cout << "Collision detected" << std::endl;
+    //                 it = entities.erase(it); // Remove collided entity from vector
+    //                 collisionDetected = true;
+    //                 break;
+    //             }
+    //         }
+    //         if (collisionDetected) {
+    //             break;
+    //         }
+    //     }
+
+    //     if (!collisionDetected) {
+    //         ++it; // Move to the next entity if no collision detected
+    //     }
+    // }
+
 }
 
 void Vampire::moveLeft()
@@ -64,12 +166,30 @@ void Vampire::moveRight()
 void Vampire::jump()
 {
     // Make sure the vampire is on the ground and that it doesn't already have a laser before jumping
-    if ((m_moverRect.y + m_moverRect.h == 460) && (laser == nullptr))
+    if ((m_moverRect.y + m_moverRect.h == 460) && (laser == nullptr) && (isFlying == false))
     {
         // Set the jumping and falling flags to true
         isJumping = true;
         isFalling = false;
     }
+}
+
+void Vampire::activateFlyAbility()
+{
+    // Check if the vampire has any fly abilities left
+    // Then Make sure the vampire is on the ground and that it doesn't already have a laser before flying
+    if ((m_moverRect.y + m_moverRect.h == 460) && (laser == nullptr) && (m_availableFlyAbility > 0))
+    {
+        // Set the flying flag to true
+        isFlying = true;
+
+        // Decrement the number of fly abilities the vampire has left
+        m_availableFlyAbility -= 1;
+
+        // Set the timer for the fly ability
+        m_FlyAbilityTimer = 500;
+    }
+
 }
 
 void Vampire::physics()
@@ -78,45 +198,75 @@ void Vampire::physics()
     if (isJumping)
     {
         // Move the vampire up
-        m_moverRect.y -= 2;
+        m_moverRect.y -= 2;     
 
-        if (m_direction == left)
-        {
-            m_moverRect.x -= 1;
-        }
-        else if (m_direction == right)
-        {
-            m_moverRect.x += 1;
-        }
+
+        // if (m_direction == left)
+        // {
+        //     m_moverRect.x -= 1;     
+
+        // }
+        // else if (m_direction == right)
+        // {
+        //     m_moverRect.x += 1;     
+
+        // }
 
         // Check if the vampire has reached the top of the jump
-        if (m_moverRect.y <= 300)
+        if (m_moverRect.y <= 200)
         {
             // Set the jumping and falling flags to false
             isJumping = false;
             isFalling = true;
         }
+        
     }
     // Check if the vampire is falling
     else if (isFalling)
     {
         // Move the vampire down
-        m_moverRect.y += 2;
+        m_moverRect.y += 2;     
 
-        if (m_direction == left)
-        {
-            m_moverRect.x -= 1;
-        }
-        else if (m_direction == right)
-        {
-            m_moverRect.x += 1;
-        }
+
+        // if (m_direction == left)
+        // {
+        //     m_moverRect.x -= 1;     
+
+        // }
+        // else if (m_direction == right)
+        // {
+        //     m_moverRect.x += 1;     
+
+        // }
 
         // Check if the vampire has reached the ground
         if (m_moverRect.y + m_moverRect.h >= 460)
         {
             // Set the jumping and falling flags to false
             isFalling = false;
+        }
+    }
+    else if (isFlying)
+    {
+        if (m_moverRect.y >= 0)
+        {
+            // Move the vampire up
+            m_moverRect.y -= 2;
+        }
+
+        // Check if the vampire has reached the top of the screen
+        else if (m_moverRect.y <= 0)
+        {
+
+            // Change the timer for the fly ability
+            m_FlyAbilityTimer -= 1;
+
+            // Check if the timer has reached 0
+            if (m_FlyAbilityTimer == 0)
+            {
+                isFalling = true;
+                isFlying = false;
+            }
         }
     }
 }
@@ -128,25 +278,15 @@ void Vampire::updateAnimations()
         if (m_animateState == firstAnimationState)
         {
             m_srcRect.x = 117;
-            int (*arrV3)[2] = new int[166][2];
-            arrV3 = new int[166][2]{{15, 1}, {16, 1}, {17, 1}, {18, 1}, {19, 1}, {20, 1}, {21, 1}, {14, 2}, {22, 2}, {23, 2}, {12, 3}, {13, 3}, {24, 3}, {25, 3}, {11, 4}, {26, 4}, {27, 4}, {11, 5}, {28, 5}, {9, 6}, {10, 6}, {29, 6}, {9, 7}, {29, 7}, {10, 8}, {29, 8}, {10, 9}, {29, 9}, {10, 10}, {29, 10}, {10, 11}, {29, 11}, {10, 12}, {29, 12}, {10, 13}, {29, 13}, {10, 14}, {30, 14}, {31, 14}, {8, 15}, {9, 15}, {31, 15}, {8, 16}, {30, 16}, {9, 17}, {30, 17}, {9, 18}, {29, 18}, {10, 19}, {29, 19}, {9, 20}, {30, 20}, {9, 21}, {30, 21}, {9, 22}, {31, 22}, {8, 23}, {31, 23}, {8, 24}, {31, 24}, {8, 25}, {31, 25}, {9, 26}, {10, 26}, {30, 26}, {11, 27}, {31, 27}, {11, 28}, {32, 28}, {33, 28}, {11, 29}, {34, 29}, {11, 30}, {35, 30}, {3, 31}, {4, 31}, {5, 31}, {6, 31}, {7, 31}, {10, 31}, {35, 31}, {3, 32}, {8, 32}, {9, 32}, {35, 32}, {2, 33}, {36, 33}, {1, 34}, {36, 34}, {1, 35}, {37, 35}, {1, 36}, {38, 36}, {0, 37}, {38, 37}, {0, 38}, {1, 39}, {1, 40}, {2, 40}, {3, 40}, {4, 41}, {10, 41}, {11, 41}, {12, 41}, {5, 42}, {7, 42}, {8, 42}, {9, 42}, {13, 42}, {38, 42}, {6, 43}, {12, 43}, {37, 43}, {12, 44}, {37, 44}, {12, 45}, {37, 45}, {12, 46}, {37, 46}, {12, 47}, {37, 47}, {12, 48}, {36, 48}, {12, 49}, {35, 49}, {12, 50}, {35, 50}, {12, 51}, {35, 51}, {12, 52}, {34, 52}, {35, 52}, {11, 53}, {33, 53}, {11, 54}, {32, 54}, {11, 55}, {12, 55}, {28, 55}, {29, 55}, {30, 55}, {31, 55}, {13, 56}, {27, 56}, {13, 57}, {14, 57}, {27, 57}, {15, 58}, {27, 58}, {15, 59}, {26, 59}, {16, 60}, {22, 60}, {26, 60}, {17, 61}, {21, 61}, {23, 61}, {25, 61}, {18, 62}, {21, 62}, {23, 62}, {25, 62}, {19, 63}, {20, 63}, {21, 63}, {24, 63}};
-            Entity::m_entitysNonTransparentPixels = arrV3;
-            Entity::m_lengthOfEntitysNonTransparentPixelsList = 166;
         }
             
         else if (m_animateState == secondAnimationState)
         {
             m_srcRect.x = 156;
-            int (*arrV4)[2] = new int[186][2];
-            arrV4 = new int[186][2]{{12, 1}, {13, 1}, {14, 1}, {15, 1}, {16, 1}, {10, 2}, {11, 2}, {17, 2}, {18, 2}, {19, 2}, {20, 2}, {21, 2}, {8, 3}, {9, 3}, {22, 3}, {23, 3}, {24, 3}, {25, 3}, {7, 4}, {26, 4}, {27, 4}, {5, 5}, {6, 5}, {28, 5}, {29, 5}, {4, 6}, {30, 6}, {3, 7}, {30, 7}, {2, 8}, {30, 8}, {2, 9}, {30, 9}, {2, 10}, {30, 10}, {3, 11}, {30, 11}, {3, 12}, {31, 12}, {3, 13}, {32, 13}, {4, 14}, {32, 14}, {4, 15}, {32, 15}, {4, 16}, {31, 16}, {1, 17}, {2, 17}, {3, 17}, {31, 17}, {1, 18}, {31, 18}, {2, 19}, {32, 19}, {3, 20}, {33, 20}, {4, 21}, {33, 21}, {3, 22}, {33, 22}, {3, 23}, {33, 23}, {2, 24}, {33, 24}, {2, 25}, {30, 25}, {31, 25}, {33, 25}, {2, 26}, {29, 26}, {32, 26}, {33, 26}, {2, 27}, {28, 27}, {2, 28}, {3, 28}, {4, 28}, {28, 28}, {5, 29}, {29, 29}, {6, 30}, {30, 30}, {6, 31}, {31, 31}, {7, 32}, {31, 32}, {7, 33}, {32, 33}, {7, 34}, {32, 34}, {7, 35}, {32, 35}, {7, 36}, {32, 36}, {7, 37}, {32, 37}, {0, 38}, {7, 38}, {32, 38}, {0, 39}, {7, 39}, {33, 39}, {0, 40}, {7, 40}, {33, 40}, {0, 41}, {7, 41}, {33, 41}, {7, 42}, {34, 42}, {7, 43}, {34, 43}, {7, 44}, {34, 44}, {7, 45}, {35, 45}, {6, 46}, {35, 46}, {6, 47}, {36, 47}, {6, 48}, {36, 48}, {6, 49}, {36, 49}, {6, 50}, {37, 50}, {5, 51}, {38, 51}, {5, 52}, {38, 52}, {5, 53}, {37, 53}, {38, 53}, {5, 54}, {35, 54}, {36, 54}, {5, 55}, {34, 55}, {6, 56}, {22, 56}, {23, 56}, {24, 56}, {35, 56}, {6, 57}, {16, 57}, {17, 57}, {18, 57}, {19, 57}, {20, 57}, {21, 57}, {25, 57}, {35, 57}, {4, 58}, {5, 58}, {15, 58}, {24, 58}, {35, 58}, {3, 59}, {15, 59}, {24, 59}, {34, 59}, {2, 60}, {15, 60}, {25, 60}, {33, 60}, {2, 61}, {14, 61}, {25, 61}, {31, 61}, {32, 61}, {3, 62}, {4, 62}, {14, 62}, {25, 62}, {30, 62}, {5, 63}, {6, 63}, {7, 63}, {14, 63}, {25, 63}, {29, 63}, {8, 64}, {14, 64}, {25, 64}, {28, 64}};
-            Entity::m_entitysNonTransparentPixels = arrV4;
-            Entity::m_lengthOfEntitysNonTransparentPixelsList = 186;
         }
         else if (m_animateState == thirdAnimationState)
         {
             m_srcRect.x = 195;
-            int (*arrV5)[2] = new int[178][2];
-            arrV5 = new int[178][2]{{14, 1}, {15, 1}, {16, 1}, {17, 1}, {18, 1}, {19, 1}, {12, 2}, {13, 2}, {20, 2}, {21, 2}, {22, 2}, {23, 2}, {11, 3}, {24, 3}, {25, 3}, {9, 4}, {10, 4}, {26, 4}, {27, 4}, {28, 4}, {8, 5}, {29, 5}, {7, 6}, {30, 6}, {5, 7}, {6, 7}, {31, 7}, {5, 8}, {31, 8}, {5, 9}, {31, 9}, {6, 10}, {31, 10}, {6, 11}, {31, 11}, {7, 12}, {31, 12}, {7, 13}, {32, 13}, {33, 13}, {7, 14}, {33, 14}, {5, 15}, {6, 15}, {33, 15}, {4, 16}, {32, 16}, {4, 17}, {32, 17}, {5, 18}, {32, 18}, {6, 19}, {32, 19}, {6, 20}, {33, 20}, {5, 21}, {33, 21}, {5, 22}, {34, 22}, {4, 23}, {34, 23}, {4, 24}, {34, 24}, {4, 25}, {5, 25}, {6, 25}, {30, 25}, {31, 25}, {32, 25}, {33, 25}, {7, 26}, {29, 26}, {8, 27}, {30, 27}, {8, 28}, {31, 28}, {32, 28}, {9, 29}, {33, 29}, {9, 30}, {34, 30}, {9, 31}, {34, 31}, {8, 32}, {35, 32}, {8, 33}, {35, 33}, {8, 34}, {36, 34}, {8, 35}, {36, 35}, {9, 36}, {36, 36}, {7, 37}, {8, 37}, {36, 37}, {5, 38}, {6, 38}, {36, 38}, {3, 39}, {4, 39}, {36, 39}, {2, 40}, {36, 40}, {1, 41}, {37, 41}, {1, 42}, {37, 42}, {2, 43}, {36, 43}, {2, 44}, {36, 44}, {1, 45}, {36, 45}, {1, 46}, {37, 46}, {2, 47}, {7, 47}, {37, 47}, {2, 48}, {3, 48}, {6, 48}, {8, 48}, {38, 48}, {2, 49}, {4, 49}, {5, 49}, {8, 49}, {8, 50}, {37, 50}, {38, 50}, {8, 51}, {35, 51}, {36, 51}, {8, 52}, {34, 52}, {8, 53}, {9, 53}, {29, 53}, {30, 53}, {31, 53}, {32, 53}, {33, 53}, {10, 54}, {13, 54}, {14, 54}, {28, 54}, {11, 55}, {12, 55}, {15, 55}, {28, 55}, {15, 56}, {28, 56}, {15, 57}, {28, 57}, {15, 58}, {28, 58}, {15, 59}, {29, 59}, {14, 60}, {29, 60}, {14, 61}, {20, 61}, {21, 61}, {22, 61}, {23, 61}, {24, 61}, {25, 61}, {26, 61}, {27, 61}, {28, 61}, {14, 62}, {18, 62}, {19, 62}, {14, 63}, {15, 63}, {16, 63}, {17, 63}};
         }
     }
     else if (m_direction == right)
@@ -154,25 +294,13 @@ void Vampire::updateAnimations()
         if (m_animateState == firstAnimationState)
         {
             m_srcRect.x = 0;
-            int (*arrV0)[2] = new int[166][2];
-            arrV0 = new int[166][2]{{18, 1}, {19, 1}, {20, 1}, {21, 1}, {22, 1}, {15, 2}, {16, 2}, {17, 2}, {23, 2}, {24, 2}, {13, 3}, {14, 3}, {25, 3}, {11, 4}, {12, 4}, {26, 4}, {10, 5}, {27, 5}, {9, 6}, {28, 6}, {29, 6}, {9, 7}, {29, 7}, {9, 8}, {28, 8}, {9, 9}, {28, 9}, {9, 10}, {28, 10}, {9, 11}, {28, 11}, {9, 12}, {28, 12}, {9, 13}, {28, 13}, {7, 14}, {8, 14}, {28, 14}, {7, 15}, {29, 15}, {30, 15}, {8, 16}, {30, 16}, {8, 17}, {29, 17}, {9, 18}, {29, 18}, {9, 19}, {28, 19}, {8, 20}, {28, 20}, {8, 21}, {29, 21}, {7, 22}, {29, 22}, {7, 23}, {30, 23}, {7, 24}, {30, 24}, {7, 25}, {30, 25}, {8, 26}, {28, 26}, {29, 26}, {7, 27}, {27, 27}, {5, 28}, {6, 28}, {27, 28}, {4, 29}, {27, 29}, {3, 30}, {27, 30}, {3, 31}, {28, 31}, {31, 31}, {32, 31}, {33, 31}, {34, 31}, {35, 31}, {3, 32}, {29, 32}, {30, 32}, {35, 32}, {2, 33}, {36, 33}, {2, 34}, {37, 34}, {1, 35}, {37, 35}, {0, 36}, {37, 36}, {38, 37}, {38, 38}, {35, 39}, {37, 39}, {34, 40}, {36, 40}, {37, 40}, {26, 41}, {27, 41}, {28, 41}, {34, 41}, {0, 42}, {25, 42}, {29, 42}, {30, 42}, {31, 42}, {33, 42}, {1, 43}, {26, 43}, {32, 43}, {1, 44}, {26, 44}, {1, 45}, {26, 45}, {1, 46}, {26, 46}, {1, 47}, {26, 47}, {2, 48}, {26, 48}, {3, 49}, {26, 49}, {3, 50}, {26, 50}, {3, 51}, {26, 51}, {3, 52}, {4, 52}, {5, 52}, {26, 52}, {6, 53}, {27, 53}, {6, 54}, {27, 54}, {7, 55}, {8, 55}, {9, 55}, {10, 55}, {26, 55}, {27, 55}, {11, 56}, {25, 56}, {11, 57}, {24, 57}, {25, 57}, {11, 58}, {23, 58}, {12, 59}, {23, 59}, {12, 60}, {16, 60}, {22, 60}, {13, 61}, {15, 61}, {17, 61}, {21, 61}, {13, 62}, {15, 62}, {17, 62}, {20, 62}, {14, 63}, {17, 63}, {18, 63}, {19, 63}};
-            Entity::m_entitysNonTransparentPixels = arrV0;
-            Entity::m_lengthOfEntitysNonTransparentPixelsList = 166;
         }
         else if (m_animateState == secondAnimationState)
         {
             m_srcRect.x = 39;
-            int (*arrV1)[2] = new int[185][2];
-            arrV1 = new int[185][2]{{22, 1}, {23, 1}, {24, 1}, {25, 1}, {26, 1}, {17, 2}, {18, 2}, {19, 2}, {20, 2}, {21, 2}, {27, 2}, {28, 2}, {14, 3}, {15, 3}, {16, 3}, {29, 3}, {30, 3}, {11, 4}, {12, 4}, {13, 4}, {31, 4}, {10, 5}, {32, 5}, {33, 5}, {9, 6}, {34, 6}, {8, 7}, {35, 7}, {8, 8}, {36, 8}, {8, 9}, {36, 9}, {8, 10}, {36, 10}, {8, 11}, {35, 11}, {8, 12}, {35, 12}, {6, 13}, {7, 13}, {35, 13}, {6, 14}, {34, 14}, {7, 15}, {34, 15}, {7, 16}, {34, 16}, {8, 17}, {35, 17}, {36, 17}, {37, 17}, {7, 18}, {37, 18}, {6, 19}, {36, 19}, {6, 20}, {35, 20}, {5, 21}, {34, 21}, {5, 22}, {35, 22}, {5, 23}, {35, 23}, {5, 24}, {36, 24}, {5, 25}, {7, 25}, {8, 25}, {9, 25}, {36, 25}, {5, 26}, {6, 26}, {10, 26}, {36, 26}, {10, 27}, {34, 27}, {35, 27}, {36, 27}, {10, 28}, {33, 28}, {9, 29}, {32, 29}, {8, 30}, {32, 30}, {8, 31}, {32, 31}, {8, 32}, {32, 32}, {7, 33}, {31, 33}, {7, 34}, {31, 34}, {7, 35}, {31, 35}, {6, 36}, {31, 36}, {6, 37}, {31, 37}, {6, 38}, {31, 38}, {6, 39}, {31, 39}, {5, 40}, {31, 40}, {5, 41}, {31, 41}, {5, 42}, {31, 42}, {4, 43}, {31, 43}, {4, 44}, {31, 44}, {4, 45}, {31, 45}, {3, 46}, {32, 46}, {3, 47}, {32, 47}, {2, 48}, {32, 48}, {2, 49}, {32, 49}, {2, 50}, {32, 50}, {1, 51}, {33, 51}, {1, 52}, {33, 52}, {1, 53}, {2, 53}, {33, 53}, {3, 54}, {33, 54}, {4, 55}, {15, 55}, {33, 55}, {4, 56}, {14, 56}, {16, 56}, {17, 56}, {18, 56}, {19, 56}, {20, 56}, {21, 56}, {22, 56}, {23, 56}, {32, 56}, {4, 57}, {14, 57}, {24, 57}, {33, 57}, {4, 58}, {14, 58}, {24, 58}, {34, 58}, {5, 59}, {14, 59}, {23, 59}, {35, 59}, {6, 60}, {13, 60}, {24, 60}, {36, 60}, {7, 61}, {8, 61}, {13, 61}, {24, 61}, {35, 61}, {36, 61}, {9, 62}, {13, 62}, {24, 62}, {33, 62}, {34, 62}, {10, 63}, {11, 63}, {13, 63}, {24, 63}, {30, 63}, {31, 63}, {32, 63}, {12, 64}, {13, 64}, {25, 64}, {29, 64}};
-            Entity::m_entitysNonTransparentPixels = arrV1;
-            Entity::m_lengthOfEntitysNonTransparentPixelsList = 185;
         }
         else if (m_animateState == thirdAnimationState)
             m_srcRect.x = 78;
-            int (*arrV2)[2] = new int[179][2];
-            arrV2 = new int[179][2]{{19, 1}, {20, 1}, {21, 1}, {22, 1}, {23, 1}, {24, 1}, {15, 2}, {16, 2}, {17, 2}, {18, 2}, {25, 2}, {26, 2}, {13, 3}, {14, 3}, {27, 3}, {10, 4}, {11, 4}, {12, 4}, {28, 4}, {29, 4}, {9, 5}, {30, 5}, {8, 6}, {31, 6}, {7, 7}, {32, 7}, {33, 7}, {7, 8}, {33, 8}, {7, 9}, {32, 9}, {7, 10}, {32, 10}, {7, 11}, {32, 11}, {7, 12}, {31, 12}, {5, 13}, {6, 13}, {31, 13}, {5, 14}, {31, 14}, {6, 15}, {32, 15}, {33, 15}, {6, 16}, {34, 16}, {6, 17}, {34, 17}, {6, 18}, {33, 18}, {6, 19}, {32, 19}, {5, 20}, {32, 20}, {5, 21}, {33, 21}, {4, 22}, {33, 22}, {4, 23}, {34, 23}, {4, 24}, {34, 24}, {5, 25}, {6, 25}, {7, 25}, {8, 25}, {32, 25}, {33, 25}, {34, 25}, {9, 26}, {31, 26}, {8, 27}, {30, 27}, {6, 28}, {7, 28}, {30, 28}, {5, 29}, {29, 29}, {5, 30}, {29, 30}, {4, 31}, {29, 31}, {3, 32}, {29, 32}, {3, 33}, {30, 33}, {2, 34}, {30, 34}, {2, 35}, {30, 35}, {2, 36}, {29, 36}, {2, 37}, {30, 37}, {31, 37}, {2, 38}, {32, 38}, {33, 38}, {2, 39}, {34, 39}, {35, 39}, {2, 40}, {36, 40}, {1, 41}, {37, 41}, {1, 42}, {37, 42}, {2, 43}, {36, 43}, {2, 44}, {36, 44}, {2, 45}, {37, 45}, {1, 46}, {37, 46}, {1, 47}, {31, 47}, {36, 47}, {0, 48}, {30, 48}, {32, 48}, {35, 48}, {36, 48}, {0, 49}, {30, 49}, {33, 49}, {34, 49}, {36, 49}, {0, 50}, {1, 50}, {30, 50}, {2, 51}, {3, 51}, {30, 51}, {4, 52}, {30, 52}, {5, 53}, {6, 53}, {7, 53}, {8, 53}, {9, 53}, {24, 53}, {29, 53}, {30, 53}, {10, 54}, {23, 54}, {25, 54}, {26, 54}, {28, 54}, {10, 55}, {23, 55}, {27, 55}, {10, 56}, {23, 56}, {10, 57}, {23, 57}, {10, 58}, {23, 58}, {9, 59}, {23, 59}, {9, 60}, {24, 60}, {10, 61}, {11, 61}, {12, 61}, {13, 61}, {14, 61}, {15, 61}, {16, 61}, {17, 61}, {18, 61}, {24, 61}, {19, 62}, {20, 62}, {24, 62}, {21, 63}, {22, 63}, {23, 63}};
-            Entity::m_entitysNonTransparentPixels = arrV2;
-            Entity::m_lengthOfEntitysNonTransparentPixelsList = 179;
     }
 }
 
@@ -182,7 +310,7 @@ void Vampire::shootLaser()
     // Then Make sure the vampire is on the ground and that it doesn't already have a laser before shooting
     // Then create a new laser with the screen bounds 0 and 832 (hardcoded)
     
-	if ((m_moverRect.y + m_moverRect.h == 460) && (laser == nullptr) && (availableLasers > 0))
+	if ((m_moverRect.y + m_moverRect.h == 460) && (laser == nullptr) && (m_availableLaserAbility > 0))
     {
         // Check the direction the vampire is facing and create a laser accordingly
         if (m_direction == left)
@@ -195,7 +323,9 @@ void Vampire::shootLaser()
         {
             laser = new ShootLaser(Drawing::gRenderer, m_moverRect.x + 20, m_moverRect.y + 17, 0, 832, right);
         }
-        // availableLasers -= 1;
+
+        // Decrement the number of lasers the vampire has left
+        m_availableLaserAbility -= 1;
     }
 }
 

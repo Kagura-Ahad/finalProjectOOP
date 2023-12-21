@@ -1,5 +1,6 @@
 #include "game.hpp"
-#include "objectCreator.hpp"
+#include <stdio.h>
+#include <stdbool.h>
 #include "vampire.hpp"
 
 SDL_Renderer* Drawing::gRenderer = NULL;
@@ -134,6 +135,7 @@ void Game::run()
 
 	Vampire vampire({0, 0, 39, 65}, {50, 395, 39, 65}, PLAYER);
 	ObjectCreator objectCreator;
+	int timer = 6000;
 
     while (!quit)
     {
@@ -159,6 +161,8 @@ void Game::run()
 					case SDLK_w:
 						vampire.jump();
 						break;
+					case SDLK_f:
+						vampire.activateFlyAbility();
                     default:
                         break;
                 }
@@ -184,10 +188,26 @@ void Game::run()
         }
 
 		// Draw the vampire and the randomly appearing entities
-		vampire.drawEntity();
+		vampire.drawEntity(objectCreator);
 		objectCreator.createRandomlyAppearingEntities(vampire.getVampiresLasersPosition());
 
-        SDL_RenderPresent(Drawing::gRenderer);
-        SDL_Delay(10); // Adjust the delay to control the frame rate
-    }
+		if (vampire.m_batsCollected > 0)
+		{
+			vampire.m_batsCollected--;
+			std::cout << "Bat collected " << std::endl;
+		}
+		if (vampire.m_lives < 3)
+		{
+			vampire.m_lives = 3;
+			std::cout << "Life lost " << std::endl;
+		}
+		if (vampire.m_lives > 3)
+		{
+			vampire.m_lives = 3;
+			std::cout << "Life gained " << std::endl;
+		}
+
+		SDL_RenderPresent(Drawing::gRenderer);
+		SDL_Delay(10); // Adjust the delay to control the frame rate
+	}
 }
