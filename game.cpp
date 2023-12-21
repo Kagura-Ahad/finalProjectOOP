@@ -6,6 +6,7 @@
 SDL_Renderer* Drawing::gRenderer = NULL;
 SDL_Texture* Drawing::assetsRANDOMLY_APPEARING_ENTITY = NULL;
 SDL_Texture* Drawing::assetsPlayer = NULL;
+Mix_Music *bgMusic = NULL;
 
 bool Game::init()
 {
@@ -70,12 +71,19 @@ bool Game::loadMedia()
 	Drawing::assetsRANDOMLY_APPEARING_ENTITY = loadTexture("finalSprite.png");
 	Drawing::assetsPlayer = loadTexture("finalVampire.png");
     gTexture = loadTexture("background.png");
+	bgMusic = Mix_LoadMUS( "background.wav" );
 	if(Drawing::assetsRANDOMLY_APPEARING_ENTITY == NULL || Drawing::assetsPlayer == NULL || gTexture == NULL)
 
     {
         printf("Unable to run due to error: %s\n",SDL_GetError());
         success = false;
     }
+	// std::cout << "Loaded media" << std::endl;s
+	if(bgMusic == NULL){
+		printf("Unable to load music: %s \n", Mix_GetError());
+		success = false;
+	}
+	// std::cout << "Loaded music" << std::endl;
 	return success;
 }
 
@@ -93,6 +101,8 @@ void Game::close()
 	SDL_DestroyWindow( gWindow );
 	gWindow = NULL;
 	Drawing::gRenderer = NULL;
+	Mix_FreeMusic(bgMusic);
+	bgMusic = NULL;
 	//Quit SDL subsystems
 	IMG_Quit();
 	SDL_Quit();
@@ -157,6 +167,11 @@ void Game::run()
                         break;
 					case SDLK_l:
 						vampire.shootLaser();
+						if( Mix_PlayingMusic() == 0 )
+						{
+							//Play the music
+							Mix_PlayMusic( bgMusic, 0);
+						}
 						break;
 					case SDLK_w:
 						vampire.jump();
@@ -190,6 +205,7 @@ void Game::run()
 		// Draw the vampire and the randomly appearing entities
 		vampire.drawEntity(objectCreator);
 		objectCreator.createRandomlyAppearingEntities(vampire.getVampiresLasersPosition());
+		vampire.vampireCollisionChecker(objectCreator);
 
 		if (vampire.m_batsCollected > 0)
 		{

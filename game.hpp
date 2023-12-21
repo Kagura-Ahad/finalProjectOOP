@@ -1,6 +1,7 @@
 #include<C:\mingw_dev_lib\include\SDL2\SDL.h>
 #include <C:\mingw_dev_lib\include\SDL2\SDL_image.h>
 #include <C:\mingw_dev_lib\include\SDL2\SDL_ttf.h>
+#include <C:\mingw_dev_lib\include\SDL2\SDL_mixer.h>
 #include <stdio.h>
 #include <iostream>
 #include <string>

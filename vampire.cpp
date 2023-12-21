@@ -33,92 +33,6 @@ void Vampire::drawEntity(ObjectCreator& creatorObject)
             laser = nullptr;
         }
     }
-    
-    
-    
-    std::vector<RandomlyAppearingEntity*>& entities = creatorObject.getEntities();
-
-    //Check if Vampire collides 
-    for (auto it = entities.rbegin(); it != entities.rend(); ++it)
-    {
-
-        if (*it != nullptr)
-        {
-            if (m_moverRect.x < (*it)->m_moverRect.x + (*it)->m_moverRect.w &&
-                m_moverRect.x + m_moverRect.w > (*it)->m_moverRect.x &&
-                m_moverRect.y < (*it)->m_moverRect.y + (*it)->m_moverRect.h &&
-                m_moverRect.y + m_moverRect.h > (*it)->m_moverRect.y)
-            {
-                if ((*it)->m_type == CAT || (*it)->m_type == GARLIC || (*it)->m_type == ONION || (*it)->m_type == KNIFE)
-                {
-                    m_lives -= 1;
-                }
-                else if ((*it)->m_type == LASER)
-                {
-                    m_availableLaserAbility += 1;
-                }
-                else if ((*it)->m_type == FLY)
-                {
-                    m_availableFlyAbility += 1;
-                }
-                else if ((*it)->m_type == TIMER)
-                {
-                    m_availableTimerAbility += 1;
-                }
-                else if ((*it)->m_type == BAT)
-                {
-                    m_batsCollected += 1;
-                }
-                else if ((*it)->m_type == JAR_OF_BLOOD)
-                {
-                    m_lives += 1;
-                }
-                delete *it;
-                *it = nullptr;
-                entities.erase(std::next(it).base());
-            }
-        }
-    }
-    
-    // //Failed attempt at collision detection when non transparent pixels coincide
-    // int offsetX[] = {-1, 0, 1, -1}; // Adjust as needed
-    // int offsetY[] = {-1, -1, 0, 0}; // Adjust as needed
-
-    // for (auto it = entities.begin(); it != entities.end();) {
-    //     std::unordered_set<size_t> entityPixels;
-
-    //     // Populate an unordered_set with hash values generated from entity's pixels
-    //     for (int i = 0; i < (*it)->m_lengthOfEntitysNonTransparentPixelsList; ++i) {
-    //         int x = (*it)->m_entitysNonTransparentPixels[i][0];
-    //         int y = (*it)->m_entitysNonTransparentPixels[i][1];
-    //         entityPixels.insert(makeHash(x, y));
-    //     }
-
-    //     bool collisionDetected = false;
-
-    //     // Check for collisions between vampire and entities
-    //     for (int i = 0; i < this->m_lengthOfEntitysNonTransparentPixelsList; ++i) {
-    //         for (int k = 0; k < 9; ++k) {
-    //             int x = this->m_entitysNonTransparentPixels[i][0] + offsetX[k];
-    //             int y = this->m_entitysNonTransparentPixels[i][1] + offsetY[k];
-
-    //             if (entityPixels.find(makeHash(x, y)) != entityPixels.end()) {
-    //                 std::cout << "Collision detected" << std::endl;
-    //                 it = entities.erase(it); // Remove collided entity from vector
-    //                 collisionDetected = true;
-    //                 break;
-    //             }
-    //         }
-    //         if (collisionDetected) {
-    //             break;
-    //         }
-    //     }
-
-    //     if (!collisionDetected) {
-    //         ++it; // Move to the next entity if no collision detected
-    //     }
-    // }
-
 }
 
 void Vampire::moveLeft()
@@ -200,18 +114,6 @@ void Vampire::physics()
         // Move the vampire up
         m_moverRect.y -= 2;     
 
-
-        // if (m_direction == left)
-        // {
-        //     m_moverRect.x -= 1;     
-
-        // }
-        // else if (m_direction == right)
-        // {
-        //     m_moverRect.x += 1;     
-
-        // }
-
         // Check if the vampire has reached the top of the jump
         if (m_moverRect.y <= 200)
         {
@@ -227,17 +129,6 @@ void Vampire::physics()
         // Move the vampire down
         m_moverRect.y += 2;     
 
-
-        // if (m_direction == left)
-        // {
-        //     m_moverRect.x -= 1;     
-
-        // }
-        // else if (m_direction == right)
-        // {
-        //     m_moverRect.x += 1;     
-
-        // }
 
         // Check if the vampire has reached the ground
         if (m_moverRect.y + m_moverRect.h >= 460)
@@ -342,5 +233,49 @@ int* Vampire::getVampiresLasersPosition()
     {
         // Return nullptr if the vampire doesn't have a laser
         return nullptr;
+    }
+}
+
+void Vampire::vampireCollisionChecker(ObjectCreator& creatorObject)
+{
+    std::vector<RandomlyAppearingEntity*>& entities = creatorObject.getEntities();
+
+    //Check if Vampire collides 
+    for (auto it = entities.rbegin(); it != entities.rend(); ++it)
+    {
+
+        if (*it != nullptr)
+        {
+            if  (*this == **it)
+            {
+                if ((*it)->m_type == CAT || (*it)->m_type == GARLIC || (*it)->m_type == ONION || (*it)->m_type == KNIFE)
+                {
+                    m_lives -= 1;
+                }
+                else if ((*it)->m_type == LASER)
+                {
+                    m_availableLaserAbility += 1;
+                }
+                else if ((*it)->m_type == FLY)
+                {
+                    m_availableFlyAbility += 1;
+                }
+                else if ((*it)->m_type == TIMER)
+                {
+                    m_availableTimerAbility += 1;
+                }
+                else if ((*it)->m_type == BAT)
+                {
+                    m_batsCollected += 1;
+                }
+                else if ((*it)->m_type == JAR_OF_BLOOD)
+                {
+                    m_lives += 1;
+                }
+                delete *it;
+                *it = nullptr;
+                entities.erase(std::next(it).base());
+            }
+        }
     }
 }

@@ -18,3 +18,12 @@ void Entity::drawEntity()
         SDL_RenderCopy(Drawing::gRenderer, Drawing::assetsRANDOMLY_APPEARING_ENTITY, &m_srcRect, &m_moverRect);
     }
 }
+
+bool Entity::operator==(const Entity& other) const {
+        return (
+            m_moverRect.x < other.m_moverRect.x + other.m_moverRect.w &&
+            m_moverRect.x + m_moverRect.w > other.m_moverRect.x &&
+            m_moverRect.y < other.m_moverRect.y + other.m_moverRect.h &&
+            m_moverRect.y + m_moverRect.h > other.m_moverRect.y
+        );
+    }

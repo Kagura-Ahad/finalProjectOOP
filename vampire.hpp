@@ -36,4 +36,5 @@ class Vampire : public Entity
         int* getVampiresLasersPosition();
         void drawEntity(ObjectCreator& creatorObject);
         void activateFlyAbility();
+        void vampireCollisionChecker(ObjectCreator& creatorObject);
 };

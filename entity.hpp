@@ -21,4 +21,5 @@ class Entity
         Entity(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType, int lengthOfEntitysNonTransparentPixelsList, int (*entitysNonTransparentPixels)[2]);
         Entity(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType);
         virtual void drawEntity();
+        bool operator==(const Entity& other) const;
 };
