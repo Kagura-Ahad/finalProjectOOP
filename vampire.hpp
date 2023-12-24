@@ -34,7 +34,8 @@ class Vampire : public Entity
         void shootLaser();
         void physics();
         int* getVampiresLasersPosition();
-        void drawEntity(ObjectCreator& creatorObject);
+        void drawEntity();
         void activateFlyAbility();
         void vampireCollisionChecker(ObjectCreator& creatorObject);
+        int getAvailableLaserAbility();
 };

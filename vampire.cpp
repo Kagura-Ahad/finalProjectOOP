@@ -18,7 +18,7 @@ Vampire::Vampire(SDL_Rect srcRect, SDL_Rect moverRect, EntityType entityType) : 
     }
 }
 
-void Vampire::drawEntity(ObjectCreator& creatorObject)
+void Vampire::drawEntity()
 {
     Entity::drawEntity();
     Vampire::physics();
@@ -278,4 +278,9 @@ void Vampire::vampireCollisionChecker(ObjectCreator& creatorObject)
             }
         }
     }
+}
+
+int Vampire::getAvailableLaserAbility()
+{
+    return m_availableLaserAbility;
 }
